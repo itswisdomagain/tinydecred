@@ -674,7 +674,7 @@ class AccountScreen(Screen):
         if val <= 0:
             app.appWindow.showError("value can't be <= 0")
 
-        log.debug(f"sending {val} to {address}")
+        log.info(f"sending {val} to {address}")
 
         def send():
             try:
