@@ -24,9 +24,9 @@ from decred.util import chains, database, helpers
 from decred.util.helpers import formatTraceback
 from decred.wallet.wallet import Wallet
 
-from . import config, qutilities as Q, ui
-from .config import DB
-from .ui import SMALL, TINY
+import config, qutilities as Q, ui
+from config import DB
+from ui import SMALL, TINY
 
 
 UI_DIR = os.path.dirname(os.path.realpath(__file__))
@@ -1649,9 +1649,12 @@ class DCRDConfigScreen(Screen):
 
                 self.ctl.connectNode(withDCRD)
 
+            self.connectedLbl.setText("Connected to dcrd")
+
         else:
             node.close()
             self.ctl.setNode(None)
+            self.connectedLbl.setText("Connection to dcrd is currently off")
 
     def fieldEdited(self, s):
         """
@@ -2019,6 +2022,7 @@ class NewAccountScreen(Screen):
         name = self.nameField.text()
         if not name:
             app.appWindow.showError("must provide name")
+            return
 
         def doneCreateAcct(acct):
             if not acct:
