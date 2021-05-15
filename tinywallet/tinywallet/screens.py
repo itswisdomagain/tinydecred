@@ -2022,6 +2022,7 @@ class NewAccountScreen(Screen):
         name = self.nameField.text()
         if not name:
             app.appWindow.showError("must provide name")
+            return
 
         def doneCreateAcct(acct):
             if not acct:
