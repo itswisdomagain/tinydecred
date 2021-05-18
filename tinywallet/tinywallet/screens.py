@@ -3233,7 +3233,7 @@ class PoolAccountScreen(Screen):
     accounts or changing the selected account.
     """
 
-    def __init__(self, acct, git push origin :mybranchScreen):
+    def __init__(self, acct, VSPScreen):
         """
         Args:
             acct (Account): A Decred account.
