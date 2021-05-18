@@ -2203,8 +2203,8 @@ class StakingScreen(Screen):
         self.canGoHome = True
         self.account = acct
         self.layout.setSpacing(20)
-        self.poolScreen = PoolScreen(acct, self.poolAuthed)
-        self.accountScreen = PoolAccountScreen(acct, self.poolScreen)
+        self.VSPScreen = VSPScreen(acct, self.poolAuthed)
+        self.accountScreen = PoolAccountScreen(acct, self.VSPScreen)
 
         self.agendasScreen = AgendasScreen(acct)
         self.statsScreen = StakeStatsScreen(acct)
@@ -2307,7 +2307,7 @@ class StakingScreen(Screen):
         acct = self.account
         if not acct.hasPool():
             app.appWindow.pop(self)
-            app.appWindow.stack(self.poolScreen)
+            app.appWindow.stack(self.VSPScreen)
 
     def stackAgendas(self):
         """
@@ -2318,9 +2318,9 @@ class StakingScreen(Screen):
             log.error("no account selected")
             app.appWindow.showError("cannot vote: no account")
             return
-        pools = acct.stakePools
-        if len(pools) == 0:
-            app.appWindow.showError("cannot vote: no pools")
+        VSP = acct.VSP
+        if len(VSP) == 0:
+            app.appWindow.showError("cannot vote: no VSP")
             return
         if len(self.agendasScreen.agendas) == 0:
             app.appWindow.showError("cannot vote: could not fetch agendas")
@@ -2488,16 +2488,16 @@ class StakingScreen(Screen):
         app.appWindow.showSuccess(f"bought {qty} tickets")
         return txs
 
-    def poolAuthed(self, res):
+    def VSPAuthed(self, res):
         """
-        The callback from the PoolScreen when a pool is added. If res evaluates
-        True, the pool was successfully authorized.
+        The callback from the VSPScreen when a VSP is added. If res evaluates
+        True, the VSP was successfully authorized.
         """
         if not res:
-            # The pool screen handles error notifications.
+            # The VSP screen handles error notifications.
             app.home()
         window = app.appWindow
-        window.pop(self.poolScreen)
+        window.pop(self.VSPScreen)
         window.stack(self)
 
 
@@ -2780,7 +2780,7 @@ class StakeStatsScreen(Screen):
         self.ticketValue.setText(r(stats.value))
 
 
-class PoolScreen(Screen):
+class VSPScreen(Screen):
     """
     A screen for adding new VSPs.
     """
@@ -2887,14 +2887,14 @@ class PoolScreen(Screen):
                 log.error(f"error retrieving stake pools: {e}")
                 return False
 
-        app.makeThread(getvsp, self.setPools)
+        app.makeThread(getvsp, self.setVSP)
 
-    def setPools(self, pools):
+    def setVSP(self, VSP):
         """
         Cache the list of stake pools from decred.org, and pick one to display.
 
         Args:
-            pools (list(dict)): The freshly-decoded-from-JSON stake pools.
+            VSPs (list(dict)): The freshly-decoded-from-JSON stake pools.
         """
         if not pools:
             return
@@ -2914,22 +2914,22 @@ class PoolScreen(Screen):
 
     def randomizePool(self, e=None):
         """
-        Randomly select a pool from the best performing half, where performance
+        Randomly select a VSP from the best performing half, where performance
         is based purely on voting record, e.g. voted/(voted+missed). The sorting
-        and some initial filtering was already performed in setPools.
+        and some initial filtering was already performed in setVSP.
         """
-        pools = self.pools
-        count = len(pools)
+        VSP = self.VSP
+        count = len(VSP)
         if count == 0:
-            log.warning("no stake pools returned from server")
+            log.warning("no stake VSP returned from server")
         lastIdx = self.poolIdx
         if count == 1:
-            self.poolIdx = 0
+            self.VSPIdx = 0
         else:
             # pick random elements until the index changes
             while self.poolIdx == lastIdx:
                 self.poolIdx = random.randint(0, count - 1)
-        pool = pools[self.poolIdx]
+        VSP = VSP[self.VSPIdx]
         self.poolUrl.setText(pool["URL"])
         self.score.setText(f"{self.scorePool(pool):.1f}%")
         self.fee.setText(f"{pool['PoolFees']:.1f}%")
@@ -3126,11 +3126,11 @@ class AgendasScreen(Screen):
             log.error("no account selected")
             app.appWindow.showError("unable to update votes: no account")
             return
-        pools = acct.stakePools
-        if len(pools) == 0:
+        VSP = acct.VSPs
+        if len(VSP) == 0:
             app.appWindow.showError("unable to set vote: no pools")
             return
-        voteBits = pools[0].purchaseInfo.voteBits
+        voteBits = VSP[0].purchaseInfo.voteBits
         for dropdown in self.dropdowns:
             originalIdx = dropdown.currentIndex()
             index = 0
@@ -3200,8 +3200,8 @@ class AgendasScreen(Screen):
             if idx == dropdown.lastIndex:
                 return
             acct = self.account
-            pools = acct.stakePools
-            voteBits = pools[0].purchaseInfo.voteBits
+            VSP = acct.vSPs
+            voteBits = VSP[0].purchaseInfo.voteBits
             maxuint16 = (1 << 16) - 1
             # Erase all choices.
             voteBits &= maxuint16 ^ dropdown.bitMask
@@ -3211,7 +3211,7 @@ class AgendasScreen(Screen):
             def changeVote():
                 app.emitSignal(ui.WORKING_SIGNAL)
                 try:
-                    pools[0].setVoteBits(voteBits)
+                    VSP[0].setVoteBits(voteBits)
                     app.appWindow.showSuccess("vote choices updated")
                     dropdown.lastIndex = idx
                 except Exception as e:
@@ -3233,7 +3233,7 @@ class PoolAccountScreen(Screen):
     accounts or changing the selected account.
     """
 
-    def __init__(self, acct, poolScreen):
+    def __init__(self, acct, VSPScreen):
         """
         Args:
             acct (Account): A Decred account.
