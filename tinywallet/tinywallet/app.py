@@ -12,15 +12,15 @@ import sys
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
-from decred.dcr import constants as DCR
-from decred.dcr.dcrdata import DcrdataBlockchain
-from decred.util import chains, database, helpers
-from decred.util.helpers import formatTraceback
-from decred.wallet.wallet import Wallet
+from decred.decred.dcr import constants as DCR
+from decred.decred.dcr.dcrdata import DcrdataBlockchain
+from decred.decred.util import chains, database, helpers
+from decred.decred.util.helpers import formatTraceback
+from decred.decred.wallet.wallet import Wallet
 
-from . import config, qutilities as Q, screens, ui
-from .config import DB
-from .ui import LARGE, MEDIUM, SMALL, TINY
+import config, qutilities as Q, screens, ui
+from config import DB
+from ui import LARGE, MEDIUM, SMALL, TINY
 
 
 # The directory of the tinywallet package.
